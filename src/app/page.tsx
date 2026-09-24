@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { formatCurrency, getInitials } from "@/lib/utils";
+import { Landmark, TrendingUp, Wallet } from "lucide-react";
 
 // Exemplo de componente assíncrono do App Router
 async function DashboardData({ userFilter }: { userFilter: string }) {
@@ -22,40 +23,57 @@ async function DashboardData({ userFilter }: { userFilter: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        {/* Saldo das Contas */}
-        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
-          <p className="text-sm font-medium text-muted-foreground mb-1">Saldo (Contas)</p>
-          <h2 className="text-xl font-bold tracking-tight">{formatCurrency(totalBalance)}</h2>
+      <div className="flex flex-col gap-4">
+        {/* Saldo das Contas (Hero Card) */}
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-900 to-purple-900 shadow-xl border-0 relative overflow-hidden">
+          <div className="relative z-10">
+            <p className="text-sm font-medium text-indigo-200 mb-2">Saldo Total (Contas)</p>
+            <h2 className="text-5xl font-bold tracking-tight text-white mb-4">{formatCurrency(totalBalance)}</h2>
+            <div className="flex items-center text-emerald-400 text-sm font-medium bg-emerald-400/10 w-fit px-3 py-1 rounded-full">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>Painel de Ativos</span>
+            </div>
+          </div>
+          {/* Decoração visual */}
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-0 right-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
         </div>
         
-        {/* Fatura dos Cartões (Estimada pelo limite usado) */}
-        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
-          <p className="text-sm font-medium text-muted-foreground mb-1">Fatura Atual</p>
-          <h2 className="text-xl font-bold tracking-tight text-red-400">{formatCurrency(usedLimit)}</h2>
+        {/* Fatura dos Cartões */}
+        <div className="p-5 rounded-3xl bg-zinc-900 shadow-lg border-0 flex justify-between items-center">
+          <div>
+            <p className="text-sm font-medium text-zinc-400 mb-1">Fatura Atual Estimada</p>
+            <h2 className="text-2xl font-bold tracking-tight text-white">{formatCurrency(usedLimit)}</h2>
+          </div>
+          <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center">
+             <Landmark className="w-6 h-6 text-red-500" />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold tracking-tight">Contas Bancárias</h3>
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold tracking-tight text-zinc-100">Contas Bancárias</h3>
+          <span className="text-sm text-indigo-400 font-medium">Ver todas</span>
+        </div>
         {accounts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma conta encontrada para o filtro atual.</p>
+          <p className="text-sm text-zinc-500">Nenhuma conta encontrada para o filtro atual.</p>
         ) : (
           <div className="space-y-3">
             {accounts.map(acc => {
               const owner = users.find(u => u.id === acc.userId);
               return (
-                <div key={acc.id} className="flex items-center justify-between p-4 rounded-xl bg-card border border-border shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: acc.color || '#333' }}>
-                      {owner ? getInitials(owner.name) : "CC"}
+                <div key={acc.id} className="flex items-center justify-between p-4 rounded-3xl bg-zinc-900 border-0 shadow-sm transition-transform active:scale-95">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-400 bg-emerald-400/10">
+                      <Wallet className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">{acc.bankName}</p>
-                      <p className="text-xs text-muted-foreground">{owner?.name}</p>
+                      <p className="font-semibold text-zinc-100 text-base">{acc.bankName}</p>
+                      <p className="text-xs text-zinc-400 font-medium">{owner?.name || "Conta Conjunta"}</p>
                     </div>
                   </div>
-                  <p className="font-semibold text-sm">{formatCurrency(acc.balance)}</p>
+                  <p className="font-bold text-base text-emerald-400">{formatCurrency(acc.balance)}</p>
                 </div>
               );
             })}

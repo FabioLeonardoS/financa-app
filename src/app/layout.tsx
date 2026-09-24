@@ -32,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground pb-16">
+      <body className="min-h-full flex flex-col bg-zinc-950 text-foreground pb-16">
         <TopBar />
         <main className="flex-1 overflow-x-hidden">
           {children}

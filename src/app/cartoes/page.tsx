@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 import { Suspense } from "react";
+import { Cpu } from "lucide-react";
 
 async function CardsData() {
   const cards = await prisma.creditCard.findMany({
@@ -16,34 +17,51 @@ async function CardsData() {
         const usedPercentage = Math.min((usedLimit / card.limit) * 100, 100);
         
         return (
-          <div key={card.id} className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="font-bold text-lg">{card.name}</h3>
-                <p className="text-xs text-muted-foreground">{card.user.name}</p>
+          <div key={card.id} className="space-y-4 mb-8">
+            {/* Cartão de Crédito Físico Simulado */}
+            <div className="p-6 rounded-[1.5rem] bg-gradient-to-tr from-rose-600 via-pink-600 to-orange-500 shadow-xl border-0 flex flex-col justify-between h-52 relative overflow-hidden text-white transition-transform active:scale-95">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-300/20 rounded-full blur-xl -ml-5 -mb-5 pointer-events-none"></div>
+              
+              <div className="flex justify-between items-start z-10">
+                <h3 className="font-bold text-lg tracking-wide opacity-90 drop-shadow-md">{card.name}</h3>
+                <Cpu className="w-8 h-8 opacity-80" />
               </div>
-              <div className="w-10 h-6 bg-zinc-800 rounded flex items-center justify-center text-[10px] font-bold">
-                {card.lastFourDigits}
+              
+              <div className="z-10 mt-6">
+                <p className="text-2xl font-mono tracking-widest drop-shadow-sm opacity-95">**** **** **** {card.lastFourDigits}</p>
+              </div>
+              
+              <div className="flex justify-between items-end z-10 mt-auto pt-4">
+                <div>
+                  <p className="text-[10px] tracking-wider uppercase opacity-75 mb-0.5">Card Holder</p>
+                  <p className="font-semibold text-sm tracking-wide">{card.user.name}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] tracking-wider uppercase opacity-75 mb-0.5">Expires</p>
+                  <p className="font-semibold text-sm tracking-wide">12/28</p>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Fatura atual</span>
-                <span className="font-bold text-red-400">{formatCurrency(usedLimit)}</span>
+            {/* Informações de Fatura e Limite */}
+            <div className="p-5 rounded-3xl bg-zinc-900 shadow-lg border-0 space-y-4">
+              <div className="flex justify-between text-sm items-end">
+                <span className="text-zinc-400 font-medium">Fatura atual</span>
+                <span className="font-bold text-red-400 text-xl">{formatCurrency(usedLimit)}</span>
               </div>
               
               {/* Barra de Progresso Visual */}
-              <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+              <div className="h-2.5 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full rounded-full transition-all duration-500 ${usedPercentage > 80 ? 'bg-red-500' : 'bg-primary'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${usedPercentage > 80 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]'}`}
                   style={{ width: `${usedPercentage}%` }}
                 />
               </div>
 
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Limite: {formatCurrency(card.limit)}</span>
-                <span>Disponível: {formatCurrency(card.availableLimit)}</span>
+              <div className="flex justify-between text-xs text-zinc-500 font-medium">
+                <span>Limite: <span className="text-zinc-300">{formatCurrency(card.limit)}</span></span>
+                <span>Disponível: <span className="text-emerald-400">{formatCurrency(card.availableLimit)}</span></span>
               </div>
             </div>
           </div>
