@@ -1,0 +1,177 @@
+// ============================================================================
+// FinançaApp - Schema do Banco de Dados
+// Aplicativo financeiro familiar e gestão de serviços freelancer
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum AccountType {
+  CHECKING    // Conta Corrente
+  SAVINGS     // Poupança
+  INVESTMENT  // Investimento
+  WALLET      // Carteira (dinheiro em mãos)
+}
+
+enum TransactionType {
+  INCOME   // Entrada
+  EXPENSE  // Saída
+  TRANSFER // Transferência
+}
+
+enum WorkOrderStatus {
+  SCHEDULED        // Agendado
+  COMPLETED        // Concluído (trabalho finalizado)
+  PENDING_PAYMENT  // Aguardando Pagamento
+  CONCILIATED      // Conciliado (pagamento recebido e vinculado)
+}
+
+enum BillingType {
+  DAILY_RATE  // Diária
+  FIXED_PRICE // Preço Fixo
+}
+
+// ============================================================================
+// Models
+// ============================================================================
+
+/// Usuário do sistema (perfil familiar compartilhado)
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts    Account[]
+  creditCards CreditCard[]
+  workOrders  WorkOrder[]
+
+  @@map("users")
+}
+
+/// Conta bancária ou carteira
+model Account {
+  id       String      @id @default(cuid())
+  userId   String
+  bankName String
+  balance  Float       @default(0)
+  type     AccountType
+  color    String?     // Cor para identificação visual
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("accounts")
+}
+
+/// Cartão de crédito
+model CreditCard {
+  id             String  @id @default(cuid())
+  userId         String
+  name           String  // Ex: "Nubank", "Inter Gold"
+  brand          String  // Ex: "Visa", "Mastercard"
+  lastFourDigits String? // Últimos 4 dígitos
+  limit          Float
+  availableLimit Float
+  closingDay     Int?    // Dia de fechamento da fatura
+  dueDay         Int?    // Dia de vencimento da fatura
+  color          String? // Cor para identificação visual
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("credit_cards")
+}
+
+/// Transação financeira (receita, despesa ou transferência)
+model Transaction {
+  id          String          @id @default(cuid())
+  accountId   String?
+  cardId      String?
+  amount      Float
+  type        TransactionType @default(EXPENSE)
+  date        DateTime        @default(now())
+  description String
+  category    String
+  notes       String?
+  isRecurring Boolean         @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account    Account?    @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  creditCard CreditCard? @relation(fields: [cardId], references: [id], onDelete: SetNull)
+  workOrder  WorkOrder?  @relation("WorkOrderPayment")
+
+  @@index([accountId])
+  @@index([cardId])
+  @@index([date])
+  @@index([category])
+  @@map("transactions")
+}
+
+/// Ordem de Serviço / Trabalho (eventos e serviços freelancer)
+model WorkOrder {
+  id                  String          @id @default(cuid())
+  userId              String
+  title               String
+  clientName          String
+  description         String?
+  location            String?
+  startDate           DateTime
+  endDate             DateTime
+  expectedPaymentDate DateTime?
+  status              WorkOrderStatus @default(SCHEDULED)
+  billingType         BillingType
+  dailyRate           Float?          // Valor da diária (quando billingType = DAILY_RATE)
+  fixedAmount         Float?          // Valor fixo (quando billingType = FIXED_PRICE)
+  transactionId       String?         @unique // Relação 1:1 com Transaction para conciliação
+  notes               String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction?  @relation("WorkOrderPayment", fields: [transactionId], references: [id], onDelete: SetNull)
+  expenses    WorkExpense[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@map("work_orders")
+}
+
+/// Despesas vinculadas a uma ordem de serviço
+model WorkExpense {
+  id             String  @id @default(cuid())
+  workOrderId    String
+  description    String
+  amount         Float
+  isReimbursable Boolean @default(false) // Se é reembolsável pelo cliente
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@index([workOrderId])
+  @@map("work_expenses")
+}

@@ -1,0 +1,28 @@
+# =============================================================================
+# FinançaApp - Docker Compose (Desenvolvimento)
+# Este arquivo sobe o PostgreSQL para desenvolvimento local
+# O compose completo (com a app) será criado no Passo 5
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: financa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: financa_user
+      POSTGRES_PASSWORD: financa_pass
+      POSTGRES_DB: financa_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financa_user -d financa_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
