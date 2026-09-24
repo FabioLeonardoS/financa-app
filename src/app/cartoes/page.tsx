@@ -3,8 +3,9 @@ import { formatCurrency } from "@/lib/utils";
 import { Suspense } from "react";
 import { Cpu } from "lucide-react";
 import { AddCardModal } from "@/components/modals/AddCardModal";
+import { EditCardModal } from "@/components/modals/EditCardModal";
 
-async function CardsData() {
+async function CardsData({ users }: { users: any[] }) {
   const cards = await prisma.creditCard.findMany({
     include: {
       user: true
@@ -29,10 +30,12 @@ async function CardsData() {
         return (
           <div key={card.id} className="space-y-4 mb-8">
             {/* Cartão de Crédito Físico Simulado */}
-            <div className={`p-6 rounded-[1.5rem] bg-gradient-to-tr ${gradientClasses} shadow-xl border-0 flex flex-col justify-between h-52 relative overflow-hidden text-white transition-transform active:scale-95`}>
+            <div className={`p-6 rounded-[1.5rem] bg-gradient-to-tr ${gradientClasses} shadow-xl border-0 flex flex-col justify-between h-52 relative overflow-hidden text-white transition-transform`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-xl -ml-5 -mb-5 pointer-events-none"></div>
               
+              <EditCardModal card={card} users={users} />
+
               <div className="flex justify-between items-start z-10">
                 <h3 className="font-bold text-lg tracking-wide opacity-90 drop-shadow-md">{card.name}</h3>
                 <Cpu className="w-8 h-8 opacity-80" />
@@ -87,7 +90,7 @@ export default async function CardsPage() {
   return (
     <div className="p-4 space-y-6">
       <Suspense fallback={<div className="h-40 flex items-center justify-center text-zinc-500 text-sm">Carregando cartões...</div>}>
-        <CardsData />
+        <CardsData users={users} />
       </Suspense>
       
       <AddCardModal users={users.map(u => ({ id: u.id, name: u.name }))} />
