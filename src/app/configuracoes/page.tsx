@@ -2,7 +2,8 @@ import prisma from "@/lib/prisma";
 import { Users, ShieldCheck, Server, Layers, Landmark, CreditCard, Smartphone, Activity } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { PluggyConnectButton } from "@/components/pluggy/PluggyConnectButton";
-import { ManageMembersButton } from "@/components/modals/ManageMembersButton";
+import { AddUserModal } from "@/components/modals/AddUserModal";
+import { EditUserModal } from "@/components/modals/EditUserModal";
 
 export default async function ConfiguracoesPage() {
   const users = await prisma.user.findMany({
@@ -40,20 +41,23 @@ export default async function ConfiguracoesPage() {
                   <p className="text-xs text-zinc-400">{user.email}</p>
                 </div>
               </div>
-              <div className="flex gap-4 text-zinc-500">
-                <div className="flex items-center gap-1.5" title={`${user._count.accounts} Contas`}>
-                  <Landmark className="w-4 h-4" />
-                  <span className="text-sm font-medium">{user._count.accounts}</span>
+              <div className="flex items-center gap-4">
+                <div className="flex gap-4 text-zinc-500 mr-2">
+                  <div className="flex items-center gap-1.5" title={`${user._count.accounts} Contas`}>
+                    <Landmark className="w-4 h-4" />
+                    <span className="text-sm font-medium">{user._count.accounts}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5" title={`${user._count.creditCards} Cartões`}>
+                    <CreditCard className="w-4 h-4" />
+                    <span className="text-sm font-medium">{user._count.creditCards}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5" title={`${user._count.creditCards} Cartões`}>
-                  <CreditCard className="w-4 h-4" />
-                  <span className="text-sm font-medium">{user._count.creditCards}</span>
-                </div>
+                <EditUserModal user={user} />
               </div>
             </div>
           ))}
           
-          <ManageMembersButton />
+          <AddUserModal />
         </div>
       </section>
 
