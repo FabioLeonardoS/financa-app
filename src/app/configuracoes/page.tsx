@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
-import { Users, ShieldCheck, Server, RefreshCw, Layers, Landmark, CreditCard, Smartphone, Activity } from "lucide-react";
+import { Users, ShieldCheck, Server, Layers, Landmark, CreditCard, Smartphone, Activity } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import { PluggyConnectButton } from "@/components/pluggy/PluggyConnectButton";
 
 export default async function ConfiguracoesPage() {
   const users = await prisma.user.findMany({
@@ -92,10 +93,7 @@ export default async function ConfiguracoesPage() {
             </div>
           </div>
 
-          <button className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Conectar Novo Banco
-          </button>
+          <PluggyConnectButton />
         </div>
       </section>
 

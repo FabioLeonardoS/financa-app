@@ -1,0 +1,79 @@
+"use client";
+
+import { useState } from "react";
+import { RefreshCw } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+
+// Carrega o react-pluggy-connect dinamicamente sem SSR (Client-side apenas)
+const PluggyConnect = dynamic(
+  () => import("react-pluggy-connect").then((mod) => mod.PluggyConnect),
+  { ssr: false }
+);
+
+export function PluggyConnectButton() {
+  const router = useRouter();
+  const [connectToken, setConnectToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const startConnect = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/pluggy/connect-token", { method: "POST" });
+      const data = await res.json();
+      
+      if (data.accessToken) {
+        setConnectToken(data.accessToken);
+        setIsOpen(true);
+      } else {
+        alert("Falha ao obter token da Pluggy. Verifique as chaves.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao conectar à Pluggy.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuccess = async (itemData: any) => {
+    const { item } = itemData;
+    console.log("[Pluggy Connect] Sucesso! Item gerado:", item.id);
+    
+    // Dispara o evento de sucesso para o nosso backend simular a sincronização
+    try {
+      await fetch("/api/pluggy/webhook", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ event: "item/updated", itemId: item.id })
+      });
+      setIsOpen(false);
+      router.refresh();
+    } catch(err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <>
+      <button 
+        onClick={startConnect}
+        disabled={loading}
+        className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+      >
+        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        {loading ? "Preparando Conexão Segura..." : "Conectar Novo Banco"}
+      </button>
+
+      {isOpen && connectToken && (
+        <PluggyConnect
+          connectToken={connectToken}
+          onSuccess={handleSuccess}
+          onError={(err: any) => console.error("[Pluggy Connect] Error:", err)}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  );
+}
