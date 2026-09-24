@@ -3,6 +3,7 @@ import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { formatCurrency, getInitials } from "@/lib/utils";
 import { Landmark, TrendingUp, Wallet } from "lucide-react";
+import { AddAccountModal } from "@/components/modals/AddAccountModal";
 
 // Exemplo de componente assíncrono do App Router
 async function DashboardData({ userFilter }: { userFilter: string }) {
@@ -11,7 +12,7 @@ async function DashboardData({ userFilter }: { userFilter: string }) {
 
   // Busca dados de forma concorrente
   const [accounts, cards, users] = await Promise.all([
-    prisma.account.findMany({ where: filter }),
+    prisma.account.findMany({ where: filter, orderBy: { createdAt: 'desc' } }),
     prisma.creditCard.findMany({ where: filter }),
     prisma.user.findMany(),
   ]);
@@ -59,13 +60,13 @@ async function DashboardData({ userFilter }: { userFilter: string }) {
         {accounts.length === 0 ? (
           <p className="text-sm text-zinc-500">Nenhuma conta encontrada para o filtro atual.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 pb-8">
             {accounts.map(acc => {
               const owner = users.find(u => u.id === acc.userId);
               return (
                 <div key={acc.id} className="flex items-center justify-between p-4 rounded-3xl bg-zinc-900 border-0 shadow-sm transition-transform active:scale-95">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-400 bg-emerald-400/10">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-400" style={{ backgroundColor: acc.color ? `${acc.color}20` : '#10B98120', color: acc.color || '#10B981' }}>
                       <Wallet className="w-6 h-6" />
                     </div>
                     <div>
@@ -88,7 +89,7 @@ export default async function HomePage(props: { searchParams: Promise<{ user?: s
   const searchParams = await props.searchParams;
   const userFilter = searchParams.user || "all";
 
-  // Busca os usuários para popular o filtro
+  // Busca os usuários para popular o filtro e o modal
   const users = await prisma.user.findMany();
 
   return (
@@ -119,6 +120,8 @@ export default async function HomePage(props: { searchParams: Promise<{ user?: s
       <Suspense fallback={<div className="h-40 flex items-center justify-center text-muted-foreground text-sm">Carregando dados...</div>}>
         <DashboardData userFilter={userFilter} />
       </Suspense>
+
+      <AddAccountModal users={users.map(u => ({ id: u.id, name: u.name }))} />
     </div>
   );
 }

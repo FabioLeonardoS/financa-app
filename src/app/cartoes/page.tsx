@@ -2,26 +2,36 @@ import prisma from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 import { Suspense } from "react";
 import { Cpu } from "lucide-react";
+import { AddCardModal } from "@/components/modals/AddCardModal";
 
 async function CardsData() {
   const cards = await prisma.creditCard.findMany({
     include: {
       user: true
-    }
+    },
+    orderBy: { createdAt: 'desc' }
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-8">
       {cards.map(card => {
         const usedLimit = card.limit - card.availableLimit;
         const usedPercentage = Math.min((usedLimit / card.limit) * 100, 100);
         
+        // Determina cores do gradiente com base no usuário ou fallback
+        let gradientClasses = "from-rose-600 via-pink-600 to-orange-500";
+        if (card.color === "#3B82F6" || card.color === "#8B5CF6") {
+           gradientClasses = "from-indigo-600 via-purple-600 to-blue-500";
+        } else if (card.color === "#10B981") {
+           gradientClasses = "from-emerald-600 via-teal-500 to-green-400";
+        }
+        
         return (
           <div key={card.id} className="space-y-4 mb-8">
             {/* Cartão de Crédito Físico Simulado */}
-            <div className="p-6 rounded-[1.5rem] bg-gradient-to-tr from-rose-600 via-pink-600 to-orange-500 shadow-xl border-0 flex flex-col justify-between h-52 relative overflow-hidden text-white transition-transform active:scale-95">
+            <div className={`p-6 rounded-[1.5rem] bg-gradient-to-tr ${gradientClasses} shadow-xl border-0 flex flex-col justify-between h-52 relative overflow-hidden text-white transition-transform active:scale-95`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-300/20 rounded-full blur-xl -ml-5 -mb-5 pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full blur-xl -ml-5 -mb-5 pointer-events-none"></div>
               
               <div className="flex justify-between items-start z-10">
                 <h3 className="font-bold text-lg tracking-wide opacity-90 drop-shadow-md">{card.name}</h3>
@@ -29,7 +39,7 @@ async function CardsData() {
               </div>
               
               <div className="z-10 mt-6">
-                <p className="text-2xl font-mono tracking-widest drop-shadow-sm opacity-95">**** **** **** {card.lastFourDigits}</p>
+                <p className="text-2xl font-mono tracking-widest drop-shadow-sm opacity-95">**** **** **** {card.lastFourDigits || "0000"}</p>
               </div>
               
               <div className="flex justify-between items-end z-10 mt-auto pt-4">
@@ -71,12 +81,16 @@ async function CardsData() {
   );
 }
 
-export default function CardsPage() {
+export default async function CardsPage() {
+  const users = await prisma.user.findMany();
+
   return (
     <div className="p-4 space-y-6">
-      <Suspense fallback={<div className="h-40 flex items-center justify-center text-muted-foreground text-sm">Carregando cartões...</div>}>
+      <Suspense fallback={<div className="h-40 flex items-center justify-center text-zinc-500 text-sm">Carregando cartões...</div>}>
         <CardsData />
       </Suspense>
+      
+      <AddCardModal users={users.map(u => ({ id: u.id, name: u.name }))} />
     </div>
   );
 }
