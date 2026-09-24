@@ -26,7 +26,12 @@ async function WorkOrdersList() {
         });
         
         return (
-          <Link href={`/trabalhos/${work.id}`} key={work.id} className="p-4 rounded-xl bg-card border border-border shadow-sm flex flex-col gap-3 hover:border-primary transition-colors cursor-pointer">
+          <Link 
+            href={`/trabalhos/${work.id}`} 
+            key={work.id} 
+            className="p-4 rounded-2xl bg-zinc-900 border border-white/5 shadow-md flex flex-col gap-3 hover:border-indigo-500/50 transition-colors cursor-pointer border-l-4"
+            style={{ borderLeftColor: workOrderStatusColor(work.status) }}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-bold">{work.title}</h3>
@@ -55,7 +60,7 @@ async function WorkOrdersList() {
       })}
 
       {works.length === 0 && (
-        <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-card border border-border mt-8 shadow-sm">
+        <div className="flex flex-col items-center justify-center p-8 rounded-2xl bg-zinc-900 border border-white/5 mt-8 shadow-sm">
           <p className="text-muted-foreground text-sm">Nenhum trabalho registrado.</p>
         </div>
       )}

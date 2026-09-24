@@ -55,8 +55,8 @@ export default async function WorkOrderDetailPage(props: { params: Promise<{ id:
         <p className="text-muted-foreground">Cliente: {workOrder.clientName}</p>
       </div>
 
-      <div className="p-4 rounded-xl bg-card border border-border shadow-sm space-y-4">
-        <h3 className="font-semibold text-primary border-b border-border pb-2">Detalhes do Orçamento</h3>
+      <div className="p-5 rounded-2xl bg-zinc-900 border border-white/5 shadow-md space-y-4">
+        <h3 className="font-semibold text-indigo-400 border-b border-white/5 pb-2">Detalhes do Orçamento</h3>
         
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>

@@ -72,20 +72,20 @@ export default function NovoTrabalhoPage() {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-36">
       <h2 className="text-xl font-bold">Novo Trabalho (Freelance)</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         
         {/* Dados Básicos */}
-        <div className="space-y-4 p-4 bg-card border border-border rounded-xl">
-          <h3 className="font-semibold text-primary">Dados Básicos</h3>
+        <div className="bg-zinc-900 p-5 rounded-2xl border border-white/5 flex flex-col gap-4">
+          <h3 className="font-semibold text-indigo-400">Dados Básicos</h3>
           
           <div>
             <label className="text-sm font-medium mb-1 block text-muted-foreground">Título do Evento/Trabalho</label>
             <input 
               required
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               value={title} onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Formatura Direito"
             />
@@ -94,7 +94,7 @@ export default function NovoTrabalhoPage() {
             <label className="text-sm font-medium mb-1 block text-muted-foreground">Nome do Cliente</label>
             <input 
               required
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               value={clientName} onChange={(e) => setClientName(e.target.value)}
               placeholder="Ex: João da Silva"
             />
@@ -105,7 +105,7 @@ export default function NovoTrabalhoPage() {
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Data Início</label>
               <input 
                 type="date" required
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={startDate} onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
@@ -113,7 +113,7 @@ export default function NovoTrabalhoPage() {
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Data Fim</label>
               <input 
                 type="date" required
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={endDate} onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
@@ -121,8 +121,8 @@ export default function NovoTrabalhoPage() {
         </div>
 
         {/* Faturamento */}
-        <div className="space-y-4 p-4 bg-card border border-border rounded-xl">
-          <h3 className="font-semibold text-primary">Faturamento</h3>
+        <div className="bg-zinc-900 p-5 rounded-2xl border border-white/5 flex flex-col gap-4">
+          <h3 className="font-semibold text-indigo-400">Faturamento</h3>
           
           <div>
             <label className="text-sm font-medium mb-1 block text-muted-foreground">Tipo de Cobrança</label>
@@ -130,14 +130,14 @@ export default function NovoTrabalhoPage() {
               <button 
                 type="button"
                 onClick={() => setBillingType("DAILY_RATE")}
-                className={`py-2 px-3 text-sm rounded-md font-medium border ${billingType === "DAILY_RATE" ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-muted-foreground"}`}
+                className={`py-3 px-3 text-sm rounded-xl font-bold border transition-colors ${billingType === "DAILY_RATE" ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/50" : "bg-zinc-950 border-zinc-800 text-zinc-500"}`}
               >
                 Por Diária
               </button>
               <button 
                 type="button"
                 onClick={() => setBillingType("FIXED_PRICE")}
-                className={`py-2 px-3 text-sm rounded-md font-medium border ${billingType === "FIXED_PRICE" ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-muted-foreground"}`}
+                className={`py-3 px-3 text-sm rounded-xl font-bold border transition-colors ${billingType === "FIXED_PRICE" ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/50" : "bg-zinc-950 border-zinc-800 text-zinc-500"}`}
               >
                 Preço Fixo
               </button>
@@ -149,7 +149,7 @@ export default function NovoTrabalhoPage() {
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Valor da Diária (R$)</label>
               <input 
                 type="number" step="0.01" required
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={dailyRate || ""} onChange={(e) => setDailyRate(parseFloat(e.target.value) || 0)}
               />
               <p className="text-xs text-muted-foreground mt-2">
@@ -163,7 +163,7 @@ export default function NovoTrabalhoPage() {
               <label className="text-sm font-medium mb-1 block text-muted-foreground">Valor Fechado (R$)</label>
               <input 
                 type="number" step="0.01" required
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={fixedAmount || ""} onChange={(e) => setFixedAmount(parseFloat(e.target.value) || 0)}
               />
             </div>
@@ -171,10 +171,10 @@ export default function NovoTrabalhoPage() {
         </div>
 
         {/* Despesas */}
-        <div className="space-y-4 p-4 bg-card border border-border rounded-xl">
+        <div className="bg-zinc-900 p-5 rounded-2xl border border-white/5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-primary">Despesas Associadas</h3>
-            <button type="button" onClick={addExpense} className="text-primary p-1 hover:bg-primary/20 rounded-md transition-colors">
+            <h3 className="font-semibold text-indigo-400">Despesas Associadas</h3>
+            <button type="button" onClick={addExpense} className="text-indigo-400 p-1 hover:bg-indigo-400/20 rounded-md transition-colors">
               <PlusCircle className="w-5 h-5" />
             </button>
           </div>
@@ -189,12 +189,12 @@ export default function NovoTrabalhoPage() {
                 <div className="space-y-2">
                   <input 
                     type="text" placeholder="Nome da despesa..." required
-                    className="w-full bg-transparent border-b border-border text-sm pb-1 focus:outline-none focus:border-primary"
+                    className="w-full bg-transparent border-b border-zinc-800 text-sm pb-1 focus:outline-none focus:border-indigo-500 text-white"
                     value={expense.description} onChange={(e) => updateExpense(expense.id, "description", e.target.value)}
                   />
                   <label className="flex items-center gap-2 text-xs">
                     <input 
-                      type="checkbox" className="accent-primary"
+                      type="checkbox" className="accent-indigo-500"
                       checked={expense.isReimbursable} onChange={(e) => updateExpense(expense.id, "isReimbursable", e.target.checked)}
                     />
                     Reembolsável (Cliente Paga)
@@ -203,11 +203,11 @@ export default function NovoTrabalhoPage() {
                 
                 <input 
                   type="number" step="0.01" placeholder="R$ 0,00" required
-                  className="w-full bg-secondary/50 rounded text-sm p-1 text-center font-medium focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full bg-zinc-950 rounded-xl text-sm p-2 text-center font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white border border-zinc-800"
                   value={expense.amount || ""} onChange={(e) => updateExpense(expense.id, "amount", parseFloat(e.target.value) || 0)}
                 />
 
-                <button type="button" onClick={() => removeExpense(expense.id)} className="text-red-400 p-1 hover:bg-red-400/20 rounded">
+                <button type="button" onClick={() => removeExpense(expense.id)} className="text-red-400 p-2 hover:bg-red-400/20 rounded-xl mt-0.5">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -216,12 +216,12 @@ export default function NovoTrabalhoPage() {
         </div>
 
         {/* Resumo do Orçamento */}
-        <div className="sticky bottom-20 p-4 bg-primary text-primary-foreground rounded-xl shadow-lg flex items-center justify-between">
+        <div className="sticky bottom-24 p-5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl shadow-lg flex items-center justify-between z-40">
           <div>
             <p className="text-xs opacity-80">Total Calculado</p>
             <p className="text-2xl font-bold">{formatCurrency(currentTotal)}</p>
           </div>
-          <button type="submit" className="bg-background text-foreground px-6 py-2 rounded-lg font-bold shadow-sm hover:opacity-90">
+          <button type="submit" className="bg-zinc-900 text-white px-8 py-3 rounded-xl font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all">
             Salvar
           </button>
         </div>
