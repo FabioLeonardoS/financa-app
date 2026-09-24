@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { Users, ShieldCheck, Server, Layers, Landmark, CreditCard, Smartphone, Activity } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { PluggyConnectButton } from "@/components/pluggy/PluggyConnectButton";
+import { ManageMembersButton } from "@/components/modals/ManageMembersButton";
 
 export default async function ConfiguracoesPage() {
   const users = await prisma.user.findMany({
@@ -52,9 +53,7 @@ export default async function ConfiguracoesPage() {
             </div>
           ))}
           
-          <button className="w-full mt-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 text-indigo-400 font-semibold text-sm transition-colors flex items-center justify-center gap-2">
-            Gerenciar Membros
-          </button>
+          <ManageMembersButton />
         </div>
       </section>
 
