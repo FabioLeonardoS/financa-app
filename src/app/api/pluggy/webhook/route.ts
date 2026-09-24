@@ -28,6 +28,7 @@ export async function POST(req: Request) {
             amount: 0, // Valor mockado (em um cenário real, viria da API Pluggy)
             description: "Transação sincronizada via Open Finance (Mock)",
             type: "EXPENSE",
+            category: "Outros",
             date: new Date(),
           }
         });
