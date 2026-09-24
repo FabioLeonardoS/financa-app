@@ -15,10 +15,18 @@ export const metadata: Metadata = {
   title: "FinançaApp",
   description: "Controle financeiro familiar e de freelancer",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Finanças",
+  },
+  icons: {
+    apple: "/icons/icon-192x192.png",
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#4f46e5",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
