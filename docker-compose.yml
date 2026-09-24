@@ -9,8 +9,6 @@ services:
       POSTGRES_USER: financa_user
       POSTGRES_PASSWORD: financa_password
       POSTGRES_DB: financa_db
-    ports:
-      - "5432:5432"
     volumes:
       - financa_db_data:/var/lib/postgresql/data
     networks:
