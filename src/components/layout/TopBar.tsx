@@ -16,7 +16,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-background/80 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-background/80 backdrop-blur-md border-b border-white/5">
       <h1 className="text-lg font-semibold tracking-tight">{getPageTitle()}</h1>
       <Link href="/configuracoes" className="p-1 rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors">
         <UserCircle className="w-7 h-7" />

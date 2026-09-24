@@ -79,7 +79,7 @@ export default function TrabalhosPage() {
 
       <Link 
         href="/trabalhos/novo"
-        className="fixed bottom-20 right-4 w-14 h-14 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity z-40"
+        className="fixed bottom-24 right-4 z-40 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.5)] hover:scale-105 active:scale-95 transition-transform"
       >
         <Plus className="w-6 h-6" />
       </Link>

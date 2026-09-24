@@ -47,13 +47,13 @@ export function AddAccountModal({ users }: { users: { id: string, name: string }
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 z-40 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center transition-transform active:scale-95"
+        className="fixed bottom-24 right-4 z-40 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
       >
         <Plus className="w-6 h-6" />
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md bg-zinc-900 rounded-[2rem] p-6 shadow-2xl relative animate-in fade-in slide-in-from-bottom-10 duration-300">
             <button 
               onClick={() => setIsOpen(false)}
