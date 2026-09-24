@@ -9,6 +9,8 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "FinançaApp",
   description: "Controle financeiro familiar e de freelancer",
