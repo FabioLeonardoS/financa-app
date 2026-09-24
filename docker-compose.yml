@@ -21,7 +21,7 @@ services:
     container_name: financa_web
     restart: always
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://financa_user:financa_password@db:5432/financa_db?schema=public
