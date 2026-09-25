@@ -5,6 +5,8 @@ import { RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
+import { ErrorBoundary } from "../ErrorBoundary";
+
 // Importa o Wrapper dinamicamente desativando o SSR completamente
 const PluggyWidget = dynamic(() => import("./PluggyWidget"), { ssr: false });
 
@@ -71,6 +73,11 @@ export function PluggyConnectButton() {
     }
   };
 
+  // Log do token antes de renderizar
+  if (isOpen && connectToken) {
+    console.log("Token recebido:", connectToken);
+  }
+
   return (
     <>
       <button 
@@ -83,12 +90,14 @@ export function PluggyConnectButton() {
       </button>
 
       {isOpen && typeof connectToken === "string" && connectToken.length > 0 && (
-        <PluggyWidget
-          connectToken={connectToken}
-          onSuccess={handleSuccess}
-          onError={(err: any) => console.error("[Pluggy Connect] Error:", err)}
-          onClose={() => setIsOpen(false)}
-        />
+        <ErrorBoundary>
+          <PluggyWidget
+            connectToken={connectToken}
+            onSuccess={handleSuccess}
+            onError={(err: any) => console.error("[Pluggy Connect] Error:", err)}
+            onClose={() => setIsOpen(false)}
+          />
+        </ErrorBoundary>
       )}
     </>
   );
