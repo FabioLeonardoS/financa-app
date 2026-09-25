@@ -5,11 +5,8 @@ import { RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 
-// Carrega o react-pluggy-connect dinamicamente sem SSR (Client-side apenas)
-const PluggyConnect = dynamic(
-  () => import("react-pluggy-connect").then((mod) => mod.PluggyConnect),
-  { ssr: false }
-);
+// Importa o Wrapper dinamicamente desativando o SSR completamente
+const PluggyWidget = dynamic(() => import("./PluggyWidget"), { ssr: false });
 
 export function PluggyConnectButton() {
   const router = useRouter();
@@ -24,13 +21,10 @@ export function PluggyConnectButton() {
     try {
       const res = await fetch("/api/pluggy/token", { method: "GET" });
       
-      if (!res.ok) {
-        let errMsg = "Falha na requisição";
-        try {
-          const errData = await res.json();
-          errMsg = errData.error || errMsg;
-        } catch(e) {}
-        throw new Error(errMsg);
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(text || "Erro desconhecido ao obter token");
       }
 
       const data = await res.json();
@@ -43,7 +37,7 @@ export function PluggyConnectButton() {
       }
     } catch (err: any) {
       console.error(err);
-      alert(`Falha ao obter token da Pluggy: ${err.message}`);
+      alert(`Falha ao obter token da Pluggy. Detalhes: ${err.message.substring(0, 100)}...`);
     } finally {
       setLoading(false);
     }
@@ -89,7 +83,7 @@ export function PluggyConnectButton() {
       </button>
 
       {isOpen && typeof connectToken === "string" && connectToken.length > 0 && (
-        <PluggyConnect
+        <PluggyWidget
           connectToken={connectToken}
           onSuccess={handleSuccess}
           onError={(err: any) => console.error("[Pluggy Connect] Error:", err)}
