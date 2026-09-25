@@ -27,7 +27,7 @@ export function PluggyConnectButton() {
         
         // Injetar script apenas após o clique e ao obter o token
         const script = document.createElement("script");
-        script.src = "https://cdn.pluggy.ai/pluggy-connect/v1/pluggy-connect.js";
+        script.src = "https://cdn.pluggy.ai/connect/v2/pluggy-connect.js";
         script.async = true;
         
         script.onload = () => {
@@ -36,6 +36,7 @@ export function PluggyConnectButton() {
             // @ts-ignore
             const pluggy = new window.PluggyConnect({
               connectToken: token,
+              includeSandbox: true,
               onSuccess: async (itemData: any) => {
                 const { item } = itemData;
                 console.log("[Pluggy Connect] Sucesso! Item gerado:", item.id);
