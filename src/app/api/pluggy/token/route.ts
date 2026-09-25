@@ -25,8 +25,11 @@ export async function GET() {
 
     const data = await client.createConnectToken();
     return NextResponse.json({ accessToken: data.accessToken });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao gerar token da Pluggy:", error);
-    return NextResponse.json({ error: "Erro ao gerar token da Pluggy" }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || "Erro interno ao gerar token" }, 
+      { status: 500 }
+    );
   }
 }

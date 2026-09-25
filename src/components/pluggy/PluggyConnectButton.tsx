@@ -23,17 +23,27 @@ export function PluggyConnectButton() {
     setLoading(true);
     try {
       const res = await fetch("/api/pluggy/token", { method: "GET" });
+      
+      if (!res.ok) {
+        let errMsg = "Falha na requisição";
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch(e) {}
+        throw new Error(errMsg);
+      }
+
       const data = await res.json();
       
-      if (data.accessToken) {
+      if (data.accessToken && typeof data.accessToken === "string") {
         setConnectToken(data.accessToken);
         setIsOpen(true);
       } else {
-        alert("Falha ao obter token da Pluggy. Verifique as chaves.");
+        throw new Error("Token recebido é inválido ou vazio.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Erro ao conectar à Pluggy.");
+      alert(`Falha ao obter token da Pluggy: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -78,7 +88,7 @@ export function PluggyConnectButton() {
         {syncing ? "Sincronizando contas e transações..." : loading ? "Preparando Conexão Segura..." : "Conectar Novo Banco"}
       </button>
 
-      {isOpen && connectToken && (
+      {isOpen && typeof connectToken === "string" && connectToken.length > 0 && (
         <PluggyConnect
           connectToken={connectToken}
           onSuccess={handleSuccess}
