@@ -70,6 +70,8 @@ model Account {
   balance  Float       @default(0)
   type     AccountType
   color    String?     // Cor para identificação visual
+  pluggyId String?     @unique
+  pluggyItemId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,6 +94,8 @@ model CreditCard {
   closingDay     Int?    // Dia de fechamento da fatura
   dueDay         Int?    // Dia de vencimento da fatura
   color          String? // Cor para identificação visual
+  pluggyId       String? @unique
+  pluggyItemId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,6 +118,7 @@ model Transaction {
   category    String
   notes       String?
   isRecurring Boolean         @default(false)
+  pluggyId    String?         @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

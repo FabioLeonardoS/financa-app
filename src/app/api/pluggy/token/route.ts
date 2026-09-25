@@ -1,43 +1,32 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { PluggyClient } from "pluggy-sdk";
 
-export async function POST() {
+export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
     const clientId = process.env.PLUGGY_CLIENT_ID;
     const clientSecret = process.env.PLUGGY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: "Credenciais do Pluggy não configuradas" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Credenciais da Pluggy não configuradas" }, { status: 500 });
     }
 
-    const response = await fetch("https://api.pluggy.ai/auth", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        clientId,
-        clientSecret,
-      }),
+    const client = new PluggyClient({
+      clientId,
+      clientSecret,
     });
 
-    if (!response.ok) {
-      throw new Error("Falha ao obter token da Pluggy");
-    }
-
-    const data = await response.json();
-
-    // Em produção real, poderíamos validar a expiração e armazenar este token 
-    // temporariamente em memória/Redis para evitar muitas chamadas à API da Pluggy
-
-    return NextResponse.json({ accessToken: data.apiKey });
+    const data = await client.createConnectToken();
+    return NextResponse.json({ accessToken: data.accessToken });
   } catch (error) {
-    console.error("Erro no /api/pluggy/token:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor" },
-      { status: 500 }
-    );
+    console.error("Erro ao gerar token da Pluggy:", error);
+    return NextResponse.json({ error: "Erro ao gerar token da Pluggy" }, { status: 500 });
   }
 }

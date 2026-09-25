@@ -1,42 +1,38 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { PluggyClient } from "pluggy-sdk";
 
 export async function POST() {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
     const clientId = process.env.PLUGGY_CLIENT_ID;
     const clientSecret = process.env.PLUGGY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      return NextResponse.json({ error: "Credenciais do Pluggy ausentes" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Credenciais do Pluggy não configuradas" },
+        { status: 500 }
+      );
     }
 
-    // 1. Obter o accessToken (API Key)
-    const authRes = await fetch("https://api.pluggy.ai/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientId, clientSecret }),
+    const client = new PluggyClient({
+      clientId,
+      clientSecret,
     });
 
-    if (!authRes.ok) throw new Error("Falha ao autenticar na API da Pluggy");
-    const { apiKey } = await authRes.json();
-
-    // 2. Criar o connectToken para o Widget
-    const connectRes = await fetch("https://api.pluggy.ai/connect_token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-KEY": apiKey,
-      },
-      body: JSON.stringify({
-        // clientUserId opcional para rastreabilidade de eventos
-      }),
-    });
-
-    if (!connectRes.ok) throw new Error("Falha ao gerar connectToken");
-    const { accessToken } = await connectRes.json();
-
-    return NextResponse.json({ accessToken });
+    const data = await client.createConnectToken();
+    return NextResponse.json({ accessToken: data.accessToken });
   } catch (error) {
     console.error("Erro no /api/pluggy/connect-token:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 }
+    );
   }
 }

@@ -17,10 +17,12 @@ export function PluggyConnectButton() {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [syncing, setSyncing] = useState(false);
+
   const startConnect = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/pluggy/connect-token", { method: "POST" });
+      const res = await fetch("/api/pluggy/token", { method: "GET" });
       const data = await res.json();
       
       if (data.accessToken) {
@@ -41,17 +43,27 @@ export function PluggyConnectButton() {
     const { item } = itemData;
     console.log("[Pluggy Connect] Sucesso! Item gerado:", item.id);
     
-    // Dispara o evento de sucesso para o nosso backend simular a sincronização
+    setIsOpen(false);
+    setSyncing(true);
+
+    // Dispara a sincronização inicial
     try {
-      await fetch("/api/pluggy/webhook", {
+      const syncRes = await fetch("/api/pluggy/sync", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ event: "item/updated", itemId: item.id })
+         body: JSON.stringify({ itemId: item.id })
       });
-      setIsOpen(false);
+      
+      if (!syncRes.ok) {
+        throw new Error("Erro na sincronização");
+      }
+      
       router.refresh();
     } catch(err) {
       console.error(err);
+      alert("Erro ao sincronizar contas. Ocorrerá em background.");
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -59,11 +71,11 @@ export function PluggyConnectButton() {
     <>
       <button 
         onClick={startConnect}
-        disabled={loading}
+        disabled={loading || syncing}
         className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
       >
-        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-        {loading ? "Preparando Conexão Segura..." : "Conectar Novo Banco"}
+        <RefreshCw className={`w-4 h-4 ${loading || syncing ? 'animate-spin' : ''}`} />
+        {syncing ? "Sincronizando contas e transações..." : loading ? "Preparando Conexão Segura..." : "Conectar Novo Banco"}
       </button>
 
       {isOpen && connectToken && (
