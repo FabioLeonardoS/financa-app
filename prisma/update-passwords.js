@@ -15,7 +15,7 @@ async function main() {
 
   const hash = await bcrypt.hash("mudar123", 10);
 
-  const emails = ["fabio@financa.app", "priscila@financa.app"];
+  const emails = ["fabiog144@gmail.com", "priscila@financa.app"];
 
   for (const email of emails) {
     const user = await prisma.user.findUnique({ where: { email } });
