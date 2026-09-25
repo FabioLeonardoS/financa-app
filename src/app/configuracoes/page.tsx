@@ -5,6 +5,7 @@ import { PluggyConnectButton } from "@/components/pluggy/PluggyConnectButton";
 import { AddUserModal } from "@/components/modals/AddUserModal";
 import { EditUserModal } from "@/components/modals/EditUserModal";
 import { LogoutButton } from "@/components/LogoutButton";
+import { ChangePasswordModal } from "@/components/ChangePasswordModal";
 
 export default async function ConfiguracoesPage() {
   const users = await prisma.user.findMany({
@@ -138,6 +139,8 @@ export default async function ConfiguracoesPage() {
         </div>
         
         <div className="bg-zinc-900 rounded-[2rem] p-2 shadow-lg border-0">
+          <ChangePasswordModal />
+          <div className="h-[1px] bg-white/5 mx-4 my-1"></div>
           <LogoutButton />
         </div>
       </section>
