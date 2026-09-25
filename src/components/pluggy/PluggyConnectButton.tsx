@@ -31,7 +31,7 @@ export function PluggyConnectButton() {
 
         const script = document.createElement("script");
         script.id = "pluggy-script";
-        script.src = "https://cdn.pluggy.ai/pluggy-connect/v1/pluggy-connect.js";
+        script.src = "https://cdn.pluggy.ai/connect/v2/pluggy-connect.js";
         script.async = true;
         
         script.onload = () => {
