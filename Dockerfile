@@ -1,14 +1,12 @@
 # Stage 1: Base image
 FROM node:20-alpine AS base
-# Instalar pnpm
-RUN npm install -g pnpm@latest
 WORKDIR /app
 
 # Stage 2: Dependencies
 FROM base AS deps
 RUN apk add --no-cache libc6-compat openssl
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-RUN pnpm install --ignore-scripts
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps
 
 # Stage 3: Builder
 FROM base AS builder
@@ -18,7 +16,7 @@ COPY . .
 # Geração do cliente do Prisma (precisamos do schema para isso)
 RUN npx prisma generate
 # Build da aplicação Next.js
-RUN pnpm run build
+RUN npm run build
 
 # Stage 4: Runner
 FROM node:20-alpine AS runner
