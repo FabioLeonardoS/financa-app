@@ -1,9 +1,10 @@
 import prisma from "@/lib/prisma";
-import { Users, ShieldCheck, Server, Layers, Landmark, CreditCard, Smartphone, Activity } from "lucide-react";
+import { Users, ShieldCheck, Server, Layers, Landmark, CreditCard, Smartphone, Activity, LogOut } from "lucide-react";
 import { getInitials } from "@/lib/utils";
 import { PluggyConnectButton } from "@/components/pluggy/PluggyConnectButton";
 import { AddUserModal } from "@/components/modals/AddUserModal";
 import { EditUserModal } from "@/components/modals/EditUserModal";
+import { LogoutButton } from "@/components/LogoutButton";
 
 export default async function ConfiguracoesPage() {
   const users = await prisma.user.findMany({
@@ -126,6 +127,18 @@ export default async function ConfiguracoesPage() {
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Seção: Conta e Segurança */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 px-2">
+          <LogOut className="w-5 h-5 text-red-400" />
+          <h3 className="text-lg font-semibold text-zinc-100 tracking-tight">Conta</h3>
+        </div>
+        
+        <div className="bg-zinc-900 rounded-[2rem] p-2 shadow-lg border-0">
+          <LogoutButton />
         </div>
       </section>
     </div>

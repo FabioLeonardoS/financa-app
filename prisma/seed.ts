@@ -10,6 +10,7 @@
  */
 
 import { PrismaClient, AccountType, BillingType, WorkOrderStatus, TransactionType } from "@prisma/client";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -29,12 +30,18 @@ async function main() {
   console.log("🗑️  Dados anteriores removidos.");
 
   // =========================================================================
+  // Hash de senha padrão (mudar123) para os usuários iniciais
+  // =========================================================================
+  const defaultPasswordHash = await hash("mudar123", 10);
+
+  // =========================================================================
   // Criar Usuários
   // =========================================================================
   const fabio = await prisma.user.create({
     data: {
       name: "Fábio",
       email: "fabio@financa.app",
+      password: defaultPasswordHash,
     },
   });
 
@@ -42,6 +49,7 @@ async function main() {
     data: {
       name: "Priscila",
       email: "priscila@financa.app",
+      password: defaultPasswordHash,
     },
   });
 

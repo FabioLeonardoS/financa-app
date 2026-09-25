@@ -25,6 +25,8 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://financa_user:financa_password@db:5432/financa_db?schema=public
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - PLUGGY_CLIENT_ID=${PLUGGY_CLIENT_ID}
       - PLUGGY_CLIENT_SECRET=${PLUGGY_CLIENT_SECRET}
     depends_on:

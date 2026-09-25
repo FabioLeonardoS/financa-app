@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { TopBar } from "@/components/layout/TopBar";
 import { BottomBar } from "@/components/layout/BottomBar";
+import { AuthProvider } from "@/components/AuthProvider";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -33,21 +36,24 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full antialiased dark`}>
       <body className="min-h-full flex flex-col bg-zinc-950 text-foreground pb-16">
-        <TopBar />
-        <main className="flex-1 overflow-x-hidden">
-          {children}
-        </main>
-        <BottomBar />
+        <AuthProvider session={session}>
+          {session && <TopBar />}
+          <main className={`flex-1 overflow-x-hidden ${session ? "" : "pb-0"}`}>
+            {children}
+          </main>
+          {session && <BottomBar />}
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
