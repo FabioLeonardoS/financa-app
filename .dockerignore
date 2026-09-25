@@ -1,0 +1,38 @@
+# Dependencies - never copy local node_modules into Docker build context
+node_modules
+.npm
+
+# Build output
+.next
+out
+
+# Environment files (injected at runtime)
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# Development files
+*.log
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Editor
+.vscode
+.idea
+*.swp
+
+# Temp
+.temp
+*.tmp
+
+# Prisma dev db (prod uses postgres)
+prisma/dev.db
+prisma/*.db-journal
