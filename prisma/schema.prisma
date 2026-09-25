@@ -149,7 +149,7 @@ model WorkOrder {
   billingType         BillingType
   dailyRate           Float?          // Valor da diária (quando billingType = DAILY_RATE)
   fixedAmount         Float?          // Valor fixo (quando billingType = FIXED_PRICE)
-  transactionId       String?         @unique // Relação 1:1 com Transaction para conciliação
+  transactionId       String?         // Relação N:1 com Transaction para conciliação múltipla
   notes               String?
 
   createdAt DateTime @default(now())
