@@ -16,6 +16,7 @@ COPY . .
 # Geração do cliente do Prisma (precisamos do schema para isso)
 RUN npx prisma generate
 # Build da aplicação Next.js
+RUN rm -rf .next
 RUN npm run build
 
 # Stage 4: Runner
