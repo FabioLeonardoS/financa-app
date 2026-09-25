@@ -6,6 +6,7 @@ import { DownloadPdfButton } from "./DownloadPdfButton";
 import { ConciliationModal } from "./ConciliationModal";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { WorkOrderActions } from "./WorkOrderActions";
 
 export default async function WorkOrderDetailPage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -45,12 +46,15 @@ export default async function WorkOrderDetailPage(props: { params: Promise<{ id:
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start">
           <h2 className="text-2xl font-bold">{workOrder.title}</h2>
-          <span 
-            className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
-            style={{ backgroundColor: workOrderStatusColor(workOrder.status) }}
-          >
-            {formatWorkOrderStatus(workOrder.status)}
-          </span>
+          <div className="flex flex-col items-end gap-2">
+            <span 
+              className="text-[10px] font-bold px-2 py-1 rounded-full text-white"
+              style={{ backgroundColor: workOrderStatusColor(workOrder.status) }}
+            >
+              {formatWorkOrderStatus(workOrder.status)}
+            </span>
+            <WorkOrderActions workOrderId={workOrder.id} />
+          </div>
         </div>
         <p className="text-muted-foreground">Cliente: {workOrder.clientName}</p>
       </div>
