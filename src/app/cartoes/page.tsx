@@ -84,11 +84,18 @@ async function CardsData({ users }: { users: any[] }) {
   );
 }
 
+import { SyncButton } from "./SyncButton";
+
 export default async function CardsPage() {
   const users = await prisma.user.findMany();
 
   return (
     <div className="p-4 space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Meus Cartões</h2>
+        <SyncButton />
+      </div>
+
       <Suspense fallback={<div className="h-40 flex items-center justify-center text-zinc-500 text-sm">Carregando cartões...</div>}>
         <CardsData users={users} />
       </Suspense>

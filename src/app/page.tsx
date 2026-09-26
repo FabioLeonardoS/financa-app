@@ -64,7 +64,7 @@ async function DashboardData({ userFilter }: { userFilter: string }) {
             {accounts.map(acc => {
               const owner = users.find(u => u.id === acc.userId);
               return (
-                <div key={acc.id} className="flex items-center justify-between p-4 rounded-3xl bg-zinc-900 border-0 shadow-sm transition-transform active:scale-95">
+                <Link href={`/contas/${acc.id}`} key={acc.id} className="flex items-center justify-between p-4 rounded-3xl bg-zinc-900 border-0 shadow-sm transition-transform hover:bg-zinc-800/80 active:scale-95">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-emerald-400" style={{ backgroundColor: acc.color ? `${acc.color}20` : '#10B98120', color: acc.color || '#10B981' }}>
                       <Wallet className="w-6 h-6" />
@@ -75,7 +75,7 @@ async function DashboardData({ userFilter }: { userFilter: string }) {
                     </div>
                   </div>
                   <p className="font-bold text-base text-emerald-400">{formatCurrency(acc.balance)}</p>
-                </div>
+                </Link>
               );
             })}
           </div>
