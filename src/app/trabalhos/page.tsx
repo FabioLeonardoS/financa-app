@@ -6,12 +6,18 @@ import { calculateWorkOrderTotal } from "@/lib/workOrderCalculations";
 import { Plus } from "lucide-react";
 
 async function WorkOrdersList() {
-  const works = await prisma.workOrder.findMany({
-    orderBy: { startDate: 'desc' },
-    include: {
-      expenses: true,
-    }
-  });
+  let works: any[] = [];
+  try {
+    works = await prisma.workOrder.findMany({
+      orderBy: { startDate: 'desc' },
+      include: {
+        expenses: true,
+      }
+    });
+  } catch (error) {
+    console.error("Erro fatal no GET WorkOrders (Server Component):", error);
+    // Em caso de erro do banco de dados (ex: P2022 column not found), retorna lista vazia e evita o crash 500 do Next.js
+  }
 
   return (
     <div className="space-y-4">

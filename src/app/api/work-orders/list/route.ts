@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(safeWorkOrders);
   } catch (error: any) {
-    console.error("Erro ao listar WorkOrders:", error);
-    return NextResponse.json({ error: error?.message || "Erro interno do servidor" }, { status: 500 });
+    console.error("Erro fatal no GET WorkOrders:", error);
+    return NextResponse.json({ success: false, data: [], error: "Falha ao carregar trabalhos" }, { status: 500 });
   }
 }
