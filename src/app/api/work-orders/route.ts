@@ -8,7 +8,6 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    // Permitir sem sessão se estiver no dev mode ou para simplificar (ajuste conforme a segurança necessária)
     const userId = session?.user?.id || (await prisma.user.findFirst())?.id;
 
     if (!userId) {
@@ -17,42 +16,67 @@ export async function POST(request: Request) {
 
     const data = await request.json();
 
-    // Invoca a API do Google Calendar de forma assíncrona (não bloqueante)
-    let googleEventId = null;
-    if (data.scheduledDate) {
-      googleEventId = await createGoogleEvent({
-        title: data.title,
-        description: data.description,
-        location: data.location,
-        scheduledDate: data.scheduledDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
-      });
+    // Validação mínima dos campos obrigatórios
+    if (!data.title?.trim()) {
+      return NextResponse.json({ error: "O campo 'Título' é obrigatório." }, { status: 400 });
     }
 
+    // Determinar datas: scheduledDate é o campo principal da Agenda
+    const startDate = data.startDate
+      ? new Date(data.startDate)
+      : data.scheduledDate
+      ? new Date(data.scheduledDate)
+      : new Date();
+
+    const endDate = data.endDate
+      ? new Date(data.endDate)
+      : data.scheduledDate
+      ? new Date(data.scheduledDate)
+      : startDate;
+
+    // ── Google Calendar: totalmente isolado, nunca quebra o fluxo principal ──
+    let googleEventId: string | null = null;
+    if (data.scheduledDate || data.startDate) {
+      try {
+        googleEventId = await createGoogleEvent({
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          scheduledDate: data.scheduledDate || data.startDate,
+          startTime: data.startTime,
+          endTime: data.endTime,
+        });
+      } catch (googleErr) {
+        // Falha no Google não impede o cadastro local
+        console.error("[Google Calendar] Erro ao criar evento (não bloqueante):", googleErr);
+      }
+    }
+
+    // ── Persistência local: sempre deve ter sucesso ──
     const workOrder = await prisma.workOrder.create({
       data: {
         userId,
-        title: data.title,
-        clientName: data.clientName || "N/A", // Agenda pode não ter clientName
-        description: data.description,
-        location: data.location,
-        startDate: data.scheduledDate ? new Date(data.scheduledDate) : new Date(),
-        endDate: data.scheduledDate ? new Date(data.scheduledDate) : new Date(),
+        title: data.title.trim(),
+        clientName: data.clientName?.trim() || "N/A",
+        description: data.description?.trim() || null,
+        location: data.location?.trim() || null,
+        startDate,
+        endDate,
         scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
-        startTime: data.startTime,
-        endTime: data.endTime,
+        startTime: data.startTime || null,
+        endTime: data.endTime || null,
         billingType: data.billingType || "FIXED_PRICE",
-        dailyRate: data.dailyRate || 0,
-        fixedAmount: data.fixedAmount || 0,
-        status: data.status || "SCHEDULED",
-        googleEventId: googleEventId,
+        dailyRate: Number(data.dailyRate) || 0,
+        fixedAmount: Number(data.fixedAmount) || 0,
+        status: "SCHEDULED",
+        googleEventId,
       },
     });
 
     return NextResponse.json(workOrder);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao criar WorkOrder:", error);
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
+    const message = error?.message || "Erro interno do servidor";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

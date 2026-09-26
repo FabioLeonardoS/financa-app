@@ -18,16 +18,20 @@ export function formatCurrency(value: number): string {
 /**
  * Formata uma data no padrão brasileiro (dd/mm/aaaa)
  */
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "—";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "—";
   return new Intl.DateTimeFormat("pt-BR").format(d);
 }
 
 /**
  * Formata uma data no formato longo (ex: "15 de setembro de 2026")
  */
-export function formatDateLong(date: Date | string): string {
+export function formatDateLong(date: Date | string | null | undefined): string {
+  if (!date) return "—";
   const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     day: "numeric",
     month: "long",
@@ -87,12 +91,14 @@ export function categoryColor(category: string): string {
 /**
  * Formata o status de um WorkOrder para exibição
  */
-export function formatWorkOrderStatus(status: string): string {
+export function formatWorkOrderStatus(status: string | null | undefined): string {
+  if (!status) return "Agendado";
   const statusMap: Record<string, string> = {
     SCHEDULED: "Agendado",
     COMPLETED: "Concluído",
     PENDING_PAYMENT: "Aguardando Pagamento",
     CONCILIATED: "Conciliado",
+    CANCELED: "Cancelado",
   };
 
   return statusMap[status] || status;
@@ -101,12 +107,14 @@ export function formatWorkOrderStatus(status: string): string {
 /**
  * Retorna a cor do badge de status do WorkOrder
  */
-export function workOrderStatusColor(status: string): string {
+export function workOrderStatusColor(status: string | null | undefined): string {
+  if (!status) return "#3B82F6";
   const colorMap: Record<string, string> = {
     SCHEDULED: "#3B82F6",       // Azul
     COMPLETED: "#F59E0B",       // Amarelo
     PENDING_PAYMENT: "#EF4444", // Vermelho
     CONCILIATED: "#10B981",     // Verde
+    CANCELED: "#6B7280",        // Cinza
   };
 
   return colorMap[status] || "#6B7280";

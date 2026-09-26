@@ -18,8 +18,8 @@ async function WorkOrdersList() {
       {works.map((work) => {
         const total = calculateWorkOrderTotal({
           billingType: work.billingType,
-          startDate: work.startDate,
-          endDate: work.endDate,
+          startDate: work.startDate || new Date(),
+          endDate: work.endDate || work.startDate || new Date(),
           dailyRate: work.dailyRate,
           fixedAmount: work.fixedAmount,
           expenses: work.expenses,
@@ -47,8 +47,8 @@ async function WorkOrdersList() {
             
             <div className="flex justify-between items-end">
               <div className="text-xs text-muted-foreground">
-                <p>{formatDate(work.startDate)} - {formatDate(work.endDate)}</p>
-                <p className="mt-1">{work.expenses.length} despesa(s) vinculada(s)</p>
+                <p>{formatDate(work.startDate)} {work.endDate && work.endDate !== work.startDate ? `- ${formatDate(work.endDate)}` : ""}</p>
+                <p className="mt-1">{work.expenses?.length ?? 0} despesa(s) vinculada(s)</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-muted-foreground">Total (Orçamento)</p>

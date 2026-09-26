@@ -1,47 +1,66 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay, addMonths, subMonths, parseISO } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  parseISO,
+} from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Loader2, AlertCircle } from "lucide-react";
+
+interface WorkOrder {
+  id: string;
+  title: string;
+  clientName: string;
+  scheduledDate: string | null;
+  startDate: string;
+  endDate: string;
+  startTime: string | null;
+  endTime: string | null;
+  status: string;
+}
+
+const EMPTY_FORM = {
+  title: "",
+  clientName: "",
+  description: "",
+  location: "",
+  startDate: "",
+  endDate: "",
+  startTime: "",
+  endTime: "",
+};
 
 export default function AgendaPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState<any[]>([]);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [events, setEvents] = useState<WorkOrder[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: "",
-    clientName: "",
-    description: "",
-    location: "",
-    startTime: "",
-    endTime: "",
-  });
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
-  const startDate = startOfWeek(monthStart);
-  const endDate = endOfWeek(monthEnd);
-
-  const dateFormat = "d";
-  const days = eachDayOfInterval({
-    start: startDate,
-    end: endDate
-  });
-
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const calStart = startOfWeek(monthStart);
+  const calEnd = endOfWeek(monthEnd);
+  const days = eachDayOfInterval({ start: calStart, end: calEnd });
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("/api/work-orders/list"); 
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data);
-      }
+      const res = await fetch("/api/work-orders/list");
+      if (res.ok) setEvents(await res.json());
     } catch (e) {
-      console.error(e);
+      console.error("Erro ao buscar eventos:", e);
     }
   };
 
@@ -49,121 +68,288 @@ export default function AgendaPage() {
     fetchEvents();
   }, [currentDate]);
 
-  const handleDayClick = (day: Date) => {
+  const openModal = (day: Date) => {
     setSelectedDay(day);
+    const iso = format(day, "yyyy-MM-dd");
+    setFormData({ ...EMPTY_FORM, startDate: iso, endDate: iso });
+    setErrorMsg(null);
     setIsModalOpen(true);
   };
 
-  const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedDay) return;
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setErrorMsg(null);
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    // Validação client-side
+    if (!formData.title.trim()) {
+      setErrorMsg("O campo Título é obrigatório.");
+      return;
+    }
+    if (!formData.clientName.trim()) {
+      setErrorMsg("O campo Cliente é obrigatório.");
+      return;
+    }
+    if (!formData.startDate) {
+      setErrorMsg("A Data de Início é obrigatória.");
+      return;
+    }
+
+    setLoading(true);
     try {
+      const payload = {
+        title: formData.title,
+        clientName: formData.clientName,
+        description: formData.description,
+        location: formData.location,
+        startDate: formData.startDate
+          ? new Date(formData.startDate + "T00:00:00").toISOString()
+          : null,
+        endDate: formData.endDate
+          ? new Date(formData.endDate + "T00:00:00").toISOString()
+          : null,
+        scheduledDate: formData.startDate
+          ? new Date(formData.startDate + "T00:00:00").toISOString()
+          : null,
+        startTime: formData.startTime || null,
+        endTime: formData.endTime || null,
+        billingType: "FIXED_PRICE",
+        fixedAmount: 0,
+      };
+
       const res = await fetch("/api/work-orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          scheduledDate: selectedDay.toISOString(),
-          billingType: "FIXED_PRICE",
-          status: "SCHEDULED"
-        })
+        body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        setIsModalOpen(false);
-        setFormData({ title: "", clientName: "", description: "", location: "", startTime: "", endTime: "" });
-        fetchEvents();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body?.error || `Erro HTTP ${res.status}: ${res.statusText}`
+        );
       }
-    } catch (error) {
-      console.error("Erro ao agendar:", error);
+
+      closeModal();
+      await fetchEvents();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Erro desconhecido ao salvar. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto pb-24">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-zinc-100">Agenda</h1>
-        <div className="flex items-center space-x-4">
-          <button className="p-2 bg-zinc-800 rounded text-zinc-100 hover:bg-zinc-700" onClick={prevMonth}><ChevronLeft className="w-5 h-5" /></button>
-          <h2 className="text-xl font-semibold capitalize text-zinc-100">
-            {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-          </h2>
-          <button className="p-2 bg-zinc-800 rounded text-zinc-100 hover:bg-zinc-700" onClick={nextMonth}><ChevronRight className="w-5 h-5" /></button>
-        </div>
+    <div className="p-4 pb-28 max-w-3xl mx-auto">
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between mb-5">
+        <button
+          className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-100 transition"
+          onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <h2 className="text-lg font-bold capitalize text-zinc-100">
+          {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+        </h2>
+        <button
+          className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-100 transition"
+          onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-zinc-800 rounded-xl overflow-hidden border border-zinc-700">
-        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((dayName) => (
-          <div key={dayName} className="bg-zinc-900 py-3 text-center font-semibold text-sm text-zinc-300">
-            {dayName}
+      {/* Grade do Calendário */}
+      <div className="grid grid-cols-7 gap-px bg-zinc-800 rounded-xl overflow-hidden border border-zinc-700 shadow-lg">
+        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d) => (
+          <div key={d} className="bg-zinc-900 py-2 text-center text-xs font-semibold text-zinc-400">
+            {d}
           </div>
         ))}
+
         {days.map((day) => {
-          const isSelectedMonth = isSameMonth(day, monthStart);
-          const dayEvents = events.filter(e => e.scheduledDate && isSameDay(parseISO(e.scheduledDate), day));
-          
+          const inMonth = isSameMonth(day, monthStart);
+          const isToday = isSameDay(day, new Date());
+          const dayEvents = events.filter(
+            (e) => e.scheduledDate && isSameDay(parseISO(e.scheduledDate), day)
+          );
+
           return (
             <div
               key={day.toString()}
-              onClick={() => handleDayClick(day)}
-              className={`bg-zinc-900 min-h-[100px] p-2 border-t border-zinc-800 cursor-pointer transition hover:bg-zinc-800/80 ${
-                !isSelectedMonth ? "text-zinc-500 bg-zinc-900/50" : "text-zinc-200"
-              } ${isSameDay(day, new Date()) ? "bg-indigo-900/20" : ""}`}
+              onClick={() => openModal(day)}
+              className={`min-h-[80px] p-1.5 border-t border-zinc-800 cursor-pointer transition
+                ${inMonth ? "bg-zinc-900 text-zinc-200" : "bg-zinc-900/40 text-zinc-600"}
+                ${isToday ? "bg-indigo-950/50 ring-1 ring-indigo-500/40 ring-inset" : "hover:bg-zinc-800/70"}`}
             >
-              <div className="flex justify-between items-start">
-                <span className={`text-sm font-medium ${isSameDay(day, new Date()) ? "bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center" : ""}`}>
-                  {format(day, dateFormat)}
-                </span>
-              </div>
-              <div className="mt-2 space-y-1">
-                {dayEvents.map((evt) => (
-                  <div key={evt.id} className="text-xs truncate bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded">
-                    {evt.startTime} - {evt.title}
+              <span
+                className={`text-xs font-medium inline-flex w-5 h-5 items-center justify-center rounded-full
+                  ${isToday ? "bg-indigo-500 text-white" : ""}`}
+              >
+                {format(day, "d")}
+              </span>
+
+              <div className="mt-1 space-y-0.5">
+                {dayEvents.slice(0, 2).map((evt) => (
+                  <div
+                    key={evt.id}
+                    className="text-[10px] leading-tight truncate bg-indigo-500/20 text-indigo-300 px-1 py-0.5 rounded"
+                  >
+                    {evt.startTime ? `${evt.startTime} ` : ""}
+                    {evt.title}
                   </div>
                 ))}
+                {dayEvents.length > 2 && (
+                  <div className="text-[9px] text-zinc-500">+{dayEvents.length - 2} mais</div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-xl font-semibold text-zinc-100 mb-4">
-              Agendar Novo Serviço ({selectedDay && format(selectedDay, "dd/MM/yyyy")})
-            </h3>
-            <form onSubmit={handleCreateEvent} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">Título do Serviço</label>
-                <input required className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-zinc-100">Agendar Novo Serviço</h3>
+              <button onClick={closeModal} className="text-zinc-400 hover:text-zinc-200 transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Erro */}
+            {errorMsg && (
+              <div className="flex items-start gap-2 bg-red-900/30 border border-red-500/40 text-red-300 text-sm rounded-lg px-3 py-2 mb-4">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>{errorMsg}</span>
               </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Título */}
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">Cliente</label>
-                <input required className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500" value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} />
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Título do Serviço <span className="text-red-400">*</span>
+                </label>
+                <input
+                  required
+                  className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Ex: Instalação elétrica"
+                />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              {/* Cliente */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">
+                  Cliente <span className="text-red-400">*</span>
+                </label>
+                <input
+                  required
+                  className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                  placeholder="Ex: João Silva"
+                />
+              </div>
+
+              {/* Data de Início / Data de Término */}
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">Hora Início</label>
-                  <input type="time" className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} />
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">
+                    Data de Início <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    required
+                    type="date"
+                    className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">Hora Término</label>
-                  <input type="time" className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} />
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Data de Término</label>
+                  <input
+                    type="date"
+                    className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                    value={formData.endDate}
+                    min={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">Local</label>
-                <input className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
+
+              {/* Hora de Início / Hora de Término */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Hora de Início</label>
+                  <input
+                    type="time"
+                    className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-zinc-400 mb-1">Hora de Término</label>
+                  <input
+                    type="time"
+                    className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                  />
+                </div>
               </div>
+
+              {/* Local */}
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-1">Descrição</label>
-                <textarea className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded text-zinc-100 focus:outline-none focus:border-indigo-500 min-h-[80px]" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Local</label>
+                <input
+                  className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="Ex: Rua das Flores, 123"
+                />
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button type="button" className="px-4 py-2 text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded transition" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded transition">Agendar</button>
+
+              {/* Descrição */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-400 mb-1">Descrição</label>
+                <textarea
+                  rows={2}
+                  className="w-full p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Detalhes adicionais..."
+                />
+              </div>
+
+              {/* Botões */}
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-sm text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg transition flex items-center gap-2"
+                >
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {loading ? "Salvando..." : "Agendar"}
+                </button>
               </div>
             </form>
           </div>
