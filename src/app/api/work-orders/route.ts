@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     let googleEventId: string | null = null;
     if (data.scheduledDate || data.startDate) {
       try {
-        googleEventId = await createGoogleEvent({
+        const gId = await createGoogleEvent({
           title: data.title,
           description: data.description,
           location: data.location,
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
           startTime: data.startTime,
           endTime: data.endTime,
         });
+        googleEventId = gId ?? null;
       } catch (googleErr) {
         // Falha no Google não impede o cadastro local
         console.error("[Google Calendar] Erro ao criar evento (não bloqueante):", googleErr);
