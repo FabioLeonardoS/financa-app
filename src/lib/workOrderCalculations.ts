@@ -32,17 +32,24 @@ export function calculateWorkOrderTotal({
   
   if (billingType === "DAILY_RATE") {
     // Calculo por diária
-    const days = daysBetween(startDate, endDate);
-    baseValue = days * (dailyRate || 0);
+    try {
+      const start = startDate || new Date();
+      const end = endDate || start;
+      const days = daysBetween(start, end);
+      baseValue = days * (dailyRate || 0);
+    } catch (err) {
+      baseValue = 0;
+    }
   } else if (billingType === "FIXED_PRICE") {
     // Valor fechado
     baseValue = fixedAmount || 0;
   }
 
   // 2. Soma as despesas reembolsáveis (que o cliente vai pagar junto)
-  const reimbursableExpensesSum = expenses
-    .filter(expense => expense.isReimbursable)
-    .reduce((sum, expense) => sum + expense.amount, 0);
+  const safeExpenses = expenses || [];
+  const reimbursableExpensesSum = safeExpenses
+    .filter(expense => expense?.isReimbursable)
+    .reduce((sum, expense) => sum + (expense?.amount || 0), 0);
 
   return baseValue + reimbursableExpensesSum;
 }
