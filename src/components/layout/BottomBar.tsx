@@ -2,21 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CreditCard, Briefcase, Settings } from "lucide-react";
+import { Home, CreditCard, Briefcase, Settings, Calendar } from "lucide-react";
 
 export function BottomBar() {
   const pathname = usePathname();
 
   const tabs = [
-    { name: "Visão Geral", href: "/", icon: Home },
+    { name: "Visão", href: "/", icon: Home },
     { name: "Cartões", href: "/cartoes", icon: CreditCard },
     { name: "Trabalhos", href: "/trabalhos", icon: Briefcase },
+    { name: "Agenda", href: "/agenda", icon: Calendar },
     { name: "Config.", href: "/configuracoes", icon: Settings },
   ];
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 h-16 bg-zinc-900/80 backdrop-blur-xl border border-white/5 rounded-3xl shadow-2xl overflow-hidden">
-      <div className="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
+      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
           const Icon = tab.icon;

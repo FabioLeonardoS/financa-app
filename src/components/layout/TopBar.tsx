@@ -11,6 +11,7 @@ export function TopBar() {
     if (pathname === "/") return "Visão Geral";
     if (pathname.startsWith("/cartoes")) return "Meus Cartões";
     if (pathname.startsWith("/trabalhos")) return "Meus Trabalhos";
+    if (pathname.startsWith("/agenda")) return "Agenda";
     if (pathname.startsWith("/configuracoes")) return "Ajustes";
     return "FinançaApp";
   };

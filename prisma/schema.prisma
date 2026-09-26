@@ -34,6 +34,7 @@ enum WorkOrderStatus {
   COMPLETED        // Concluído (trabalho finalizado)
   PENDING_PAYMENT  // Aguardando Pagamento
   CONCILIATED      // Conciliado (pagamento recebido e vinculado)
+  CANCELED         // Cancelado
 }
 
 enum BillingType {
@@ -144,12 +145,16 @@ model WorkOrder {
   location            String?
   startDate           DateTime
   endDate             DateTime
+  scheduledDate       DateTime?       // Data principal do evento na agenda
+  startTime           String?         // Hora de início (ex: "08:00")
+  endTime             String?         // Hora de término (ex: "18:00")
   expectedPaymentDate DateTime?
   status              WorkOrderStatus @default(SCHEDULED)
   billingType         BillingType
   dailyRate           Float?          // Valor da diária (quando billingType = DAILY_RATE)
   fixedAmount         Float?          // Valor fixo (quando billingType = FIXED_PRICE)
   transactionId       String?         // Relação N:1 com Transaction para conciliação múltipla
+  googleEventId       String?         // ID do evento no Google Calendar (para deletar se cancelado)
   notes               String?
 
   createdAt DateTime @default(now())
@@ -162,6 +167,7 @@ model WorkOrder {
   @@index([userId])
   @@index([status])
   @@index([startDate])
+  @@index([scheduledDate])
   @@map("work_orders")
 }
 
